@@ -4,6 +4,7 @@ namespace Netcore\GAlerts;
 
 use Exception;
 use Illuminate\Support\Collection;
+use Netcore\GAlerts\Exceptions\GAlertException;
 
 class Manager extends ManagerBase
 {
@@ -292,6 +293,44 @@ class Manager extends ManagerBase
         $this->getDataStack(true);
 
         return $this;
+    }
+
+    /**
+     * Convert object to array
+     *
+     * @param $object
+     * @return mixed
+     */
+    private function objectToArray($object) {
+        return @json_decode(@json_encode($object), 1);
+    }
+
+    /**
+     * Parse RSS Feed data
+     *
+     * @param \Netcore\GAlerts\GAlert $alert
+     * @return \Illuminate\Support\Collection
+     */
+    public function getRssData(GAlert $alert)
+    {
+        $contents = file_get_contents($alert->feedUrl);
+
+        $xml = simplexml_load_string($contents);
+        $xml = $this->objectToArray($xml);
+
+        $data = collect();
+
+        foreach (array_get($xml, 'entry') as $item) {
+            $data->push([
+                'id' => array_get($item, 'id'),
+                'title' => array_get($item, 'title'),
+                'link' => array_get($item, 'link.@attributes.href'),
+                'published' => array_get($item, 'published'),
+                'content' => array_get($item, 'content')
+            ]);
+        }
+
+        return $data;
     }
 
 }

@@ -2,15 +2,13 @@
 
 namespace Netcore\GAlerts;
 
-use Illuminate\Support\Collection;
-
 class GAlert extends GAlertBase
 {
 
     /**
      * Get all alerts
      *
-     * @return Collection
+     * @return \Illuminate\Support\Collection
      */
     public static function all()
     {
@@ -20,7 +18,7 @@ class GAlert extends GAlertBase
     /**
      * Find alert by id
      *
-     * @param $id
+     * @param int $id
      * @return \Netcore\GAlerts\GAlert
      */
     public static function findById($id)
@@ -33,21 +31,21 @@ class GAlert extends GAlertBase
     /**
      * Find alert by keyword|query
      *
-     * @param $keyword
-     * @return mixed
+     * @param string $keyword
+     * @return \Netcore\GAlerts\GAlert
      */
     public static function findByKeyword($keyword)
     {
         $alerts = app(Manager::class)->all();
 
-        return $alerts->where('query', $id)->first();
+        return $alerts->where('query', $keyword)->first();
     }
 
     /**
      * Find by data id
      *
-     * @param $id
-     * @return mixed
+     * @param string $id
+     * @return \Netcore\GAlerts\GAlert
      */
     public static function findByDataId($id)
     {
@@ -206,6 +204,16 @@ class GAlert extends GAlertBase
         app(Manager::class)->refreshData();
 
         return self::findByDataId($id);
+    }
+
+    /**
+     * Get alert RSS data
+     *
+     * @return \Illuminate\Support\Collection
+     */
+    public function getFeedData()
+    {
+        return app(Manager::class)->getRssData($this);
     }
 
 }
