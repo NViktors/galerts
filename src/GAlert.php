@@ -31,20 +31,16 @@ class GAlert extends GAlertBase
     }
 
     /**
-     * Create and return new instance
+     * Find alert by keyword|query
      *
-     * @param array $data
-     * @return \Netcore\GAlerts\GAlert
+     * @param $keyword
+     * @return mixed
      */
-    public static function create(array $data)
+    public static function findByKeyword($keyword)
     {
-        $alert = app(Manager::class)->create(new self($data));
-        $id = array_get($alert, '4.0.1');
+        $alerts = app(Manager::class)->all();
 
-        // Dirty, but works..
-        app(Manager::class)->refreshData();
-
-        return self::findByDataId($id);
+        return $alerts->where('query', $id)->first();
     }
 
     /**
@@ -63,16 +59,153 @@ class GAlert extends GAlertBase
     /**
      * Delete alert
      *
-     * @param GAlert|string $entry
      * @return bool
      */
-    public static function delete($entry)
+    public function delete()
     {
-        if ($entry instanceof GAlert) {
-            $entry = $entry->dataId;
-        }
+        return (bool) app(Manager::class)->delete($this);
+    }
 
-        return (bool) app(Manager::class)->delete($entry);
+    /**
+     * Set query
+     *
+     * @param $keyword
+     * @return $this
+     */
+    public function keyword($keyword)
+    {
+        $this->query = $keyword;
+
+        return $this;
+    }
+
+    /**
+     * Set delivery to feed
+     *
+     * @return $this
+     */
+    public function deliverToFeed()
+    {
+        $this->deliverTo = self::DELIVERY_FEED;
+
+        return $this;
+    }
+
+    /**
+     * Set delivery to email
+     *
+     * @return $this
+     */
+    public function deliverToEmail()
+    {
+        $this->deliverTo = self::DELIVERY_EMAIL;
+
+        return $this;
+    }
+
+    /**
+     * Set frequency to "As it happens"
+     *
+     * @return $this
+     */
+    public function frequencyAsItHappens()
+    {
+        $this->howOften = self::FREQUENCY_AS_IT_HAPPENS;
+
+        return $this;
+    }
+
+    /**
+     * Set frequency to daily (only if delivery = email)
+     *
+     * @return $this
+     */
+    public function frequencyDaily()
+    {
+        $this->howOften = self::FREQUENCY_DAILY;
+
+        return $this;
+    }
+
+    /**
+     * Set frequency to weekly (only if delivery = email)
+     *
+     * @return $this
+     */
+    public function frequencyWeekly()
+    {
+        $this->howOften = self::FREQUENCY_WEEKLY;
+
+        return $this;
+    }
+
+    /**
+     * Set language
+     *
+     * @param $iso
+     * @return $this
+     */
+    public function language($iso)
+    {
+        $this->language = $iso;
+
+        return $this;
+    }
+
+    /**
+     * Set "How many" to All results
+     *
+     * @return $this
+     */
+    public function allResults()
+    {
+        $this->howMany = self::QUANTITY_ALL;
+
+        return $this;
+    }
+
+    /**
+     * Set "How many" to Best only results
+     *
+     * @return $this
+     */
+    public function bestResults()
+    {
+        $this->howMany = self::QUANTITY_BEST;
+
+        return $this;
+    }
+
+    /**
+     * Create the alert
+     * 
+     * @return mixed
+     */
+    public function save()
+    {
+        $alert = app(Manager::class)->create($this);
+        $id = array_get($alert, '4.0.1');
+
+        // Dirty, but works..
+        app(Manager::class)->refreshData();
+
+        return self::findByDataId($id);
+    }
+
+    /**
+     * Update the alert
+     *
+     * @return $this
+     */
+    public function update()
+    {
+        $alert = app(Manager::class)->update($this);
+        $id = array_get($alert, '4.0.1');
+
+        // Dirty, but works..
+        app(Manager::class)->refreshData();
+
+        return self::findByDataId($id);
     }
 
 }

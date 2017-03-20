@@ -42,22 +42,22 @@ class Manager extends ManagerBase
     }
 
     /**
-     * Delete alert with given ID
+     * Delete alert
      *
-     * @param $id
+     * @param \Netcore\GAlerts\GAlert $alert
      * @return bool
      */
-    public function delete($id)
+    public function delete(GAlert $alert)
     {
         $token = $this->getToken('x');
         $deleteUrl = self::DELETE_ENDPOINT . http_build_query(['x' => $token]);
 
-        $params = [
-            'params' => json_encode([null, (string) $id]),
-        ];
+        $formData = $this->buildParams($alert, 'delete');
 
         $deleteResponse = $this->resource->post($deleteUrl, [
-            'form_params' => $params,
+            'form_params' => [
+                'params' => $formData
+            ],
             'headers'     => [
                 'Content-Type' => 'application/x-www-form-urlencoded;charset=UTF-8',
                 'Origin'       => self::GOOGLE_URL,
@@ -85,6 +85,34 @@ class Manager extends ManagerBase
         $formData = $this->buildParams($alert, 'create');
 
         $response = $this->resource->post($createUrl, [
+            'form_params' => [
+                'params' => $formData,
+            ],
+            'headers'     => [
+                'Content-Type' => 'application/x-www-form-urlencoded;charset=UTF-8',
+                'Origin'       => 'https://www.google.com',
+                'Referer'      => 'https://www.google.com/alerts?hl=en',
+                'User-Agent'   => 'Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1)',
+            ],
+        ]);
+
+        return json_decode($response->getBody()->getContents());
+    }
+
+    /**
+     * Update the alert
+     *
+     * @param \Netcore\GAlerts\GAlert $alert
+     * @return mixed
+     */
+    public function update(GAlert $alert)
+    {
+        $token = $this->getToken('x');
+        $updateUrl = self::MODIFY_ENDPOINT . http_build_query(['x' => $token, 'hl' => 'en']);
+
+        $formData = $this->buildParams($alert, 'update');
+
+        $response = $this->resource->post($updateUrl, [
             'form_params' => [
                 'params' => $formData,
             ],
@@ -169,6 +197,10 @@ class Manager extends ManagerBase
             $formQuery = '[null,[null,null,null,[null,"::query::","::domain::",[null,"::language::","::region::"],null,null,null,::anywhere::,::customLanguage::],::sources::,::quantity::,[[null,::deliveryAndFrequency::,"::langString::",null,null,null,null,null,"0",null,null,"::dataID2::"]]]]';
         }
 
+        if($buildFor == 'update') {
+            $formQuery = '[null,"::dataID1::",[null,null,null,[null,"::query::","::domain::",[null,"::language::","::region::"],null,null,null,::anywhere::,::customLanguage::],::sources::,::quantity::,[[null,::deliveryAndFrequency::,"::langString::",null,null,null,null,null,"::ID::",null,null,"::dataID2::"]]]]';
+        }
+
         if ($buildFor == 'delete') {
             $formQuery = '[null,"::dataID1::"]';
         }
@@ -185,7 +217,7 @@ class Manager extends ManagerBase
             'langString'           => strtolower($language) . '-' . strtoupper($region),
             'dataID2'              => $dataId2,
             'dataID1'              => $dataId1,
-            'id'                   => $id,
+            'ID'                   => $id,
             'customLanguage'       => $customLanguage,
         ];
 
