@@ -1,32 +1,67 @@
 # Google Alerts manager
 
-### Available methods
-
+### Installation
+1. Install package using command
+```bash 
+    composer require netcore/galerts
+```
+2. Add service provider to your app.php file
 ```php
-
-    use Netcore\GAlers\GAlert;
-    
-    // Get collection of existing alerts
-    
-    GAlert::all();
-    
-    // Create an alert
-    // retuns an instance of GAlert
-    
-    $alert = GAlert::create([
-        'query' => 'Alert query..',
-        'frequency' => GAlert::FREQUENCY_DAILY /* or ::FREQUENCY_AS_IT_HAPPENS or ::FREQUENCY_WEEKLY */
-        'deliverTo' => GAlert::DELIVERY_EMAIL /* or ::DELIVERY_RSS */,
-        ....
-    );
-    
-    // ::create returns an instance of our new alert
-    
-    // Delete an alert
-    
-    GAlert::delete($alert); /* You can pass instance itself */
-    GAlert::delete('28764d5015595ee0:7d6ec6d0bb215180:com:lv:LV'); /* Or use dataId */
-
+    'providers' => [
+        ...
+        Netcore\GAlerts\GAlertsServiceProvider::class,
+    ]
 ```
 
-To be continued...
+### Usage
+
+At the top of your controller/service put the following
+```php
+    use Netcore\GAlers\GAlert;
+```
+
+- Fetch all existing alerts
+```php
+    GAlert::all();
+```
+
+- Find alert by data id
+```php
+    GAlert::findByDataId('28764d5015595ee0:60bb6f517d7861db:com:en:US:L');
+```
+
+- Find alert by data id
+```php
+    GAlert::findByKeyowrd('My alert');
+```
+
+- Create an alert
+```php
+    $alert = new GAlert;
+    
+    $alert = $alert
+        ->keyword('My alert')
+        ->deliverToEmail()
+        ->frequencyWeekly()
+        ->language('lv')
+        ->save();
+```
+
+- Update an existing alert
+```php
+    $alert = GAlert::findByKeyowrd('My alert');
+   
+    $updated = $alert
+        ->keyword('My new alert')
+        ->deliverToFeed()
+        ->update();
+```
+
+- Delete an alert
+```php
+    $alert = GAlert::findByKeyowrd('My alert');
+   
+    $alert->delete();
+```
+
+
